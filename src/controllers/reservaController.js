@@ -1,6 +1,6 @@
 const Producto = require('../models/Producto');
 const Reserva = require('../models/Reserva');
-const dayjs = require('dayjs');
+const dayjs = require('dayjs');  // para manejar fechas de manera optima.
 
 //Reactifica si la fecha del turno introducida es valida
 function esTurnoValido(fecha) {
@@ -39,7 +39,7 @@ exports.crearReserva = async (req, res) => {
     return res.status(400).json({ error: 'Hasta 3 turnos consecutivos.' });
   }
 
-  // Ver
+  // Verrifica si los productos solicitados requieren un extra
   let extras = [];
   for (let id of productosSolicitados) {
     const p = await Producto.findById(id);
@@ -55,10 +55,12 @@ exports.crearReserva = async (req, res) => {
     }
   }
 
+  //total es en base a 100 por cada turno de cualquier producto.
   const total = [...productosSolicitados, ...extras];
   let precioBase = total.length * 100 * turnos;
   if (productosSolicitados.length > 1) precioBase *= 0.9;
 
+  // se guarda la reseva en la base de datos
   const reserva = new Reserva({ cliente, productos: total, fechaInicio, turnos, pago, moneda, precio: precioBase });
   await reserva.save();
 
